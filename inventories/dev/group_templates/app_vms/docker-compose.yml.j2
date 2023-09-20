@@ -1,0 +1,85 @@
+---
+x-restart-policy:
+  - &restart-policy ${RESTART_POLICY:-unless-stopped}
+  - &db-host db
+  - &app-host app
+
+  - &db-user ${DB_USER:-username}
+  - &db-pass ${DB_PASS:-userpass}
+  - &db-name ${DB_NAME:-database}
+
+services:
+  web:
+    image: ${WEB_IMAGE:-nginx:1.25.2-alpine3.18-slim}
+    environment:
+      WEBSITE_DOMAIN: ${WEBSITE_DOMAIN:-app.test}
+      APP_HOST: *app-host
+    volumes:
+      -
+        type: bind
+        source: ${WEB_CONFIGS_DIR:-./configs/web}/nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+      -
+        type: bind
+        source: ${WEB_CONFIGS_DIR:-./configs/web}/templates
+        target: /etc/nginx/templates
+        read_only: true
+    ports:
+      - ${WEB_HTTP_PORT:-80}:80
+    depends_on:
+      app:
+        condition: service_started
+    restart: *restart-policy
+  app:
+    image: ${APP_IMAGE:-php:8.2.10-fpm-alpine3.18}
+    environment:
+      DB_HOST: *db-host
+      DB_USER: *db-user
+      DB_PASS: *db-pass
+      DB_NAME: *db-name
+      DB_PORT: ${DB_PORT:-3306}
+    volumes:
+      -
+        type: bind
+        source: ${APP_CODE_DIR:-./app}
+        target: /var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      default:
+        aliases:
+          - *app-host
+    restart: *restart-policy
+
+  db:
+    image: ${DB_IMAGE:-mysql:8.1.0}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-rootpass}
+      MYSQL_DATABASE: *db-name
+      MYSQL_USER: *db-user
+      MYSQL_PASSWORD: *db-pass
+    restart: *restart-policy
+    volumes:
+      -
+        type: volume
+        source: db-data
+        target: /var/lib/mysql
+    healthcheck:
+      test:
+        - CMD
+        - mysqladmin
+        - ping
+        - -h
+        - localhost
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      default:
+        aliases:
+          - *db-host
+volumes:
+  db-data:

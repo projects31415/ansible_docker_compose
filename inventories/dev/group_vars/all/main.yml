@@ -1,0 +1,2 @@
+---
+ansible_ssh_common_args: -F ./ssh_config.dev -o ControlMaster=auto -o ControlPersist=10m -o ControlPath=ssh/cm_socket/dev.%C # uses hash %C to avoid "too long for Unix domain socket" error

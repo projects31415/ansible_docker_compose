@@ -1,0 +1,10 @@
+---
+deploy_project__project_path: /var/www/compose_project
+
+deploy_project__templates_path: ''
+# Example:
+# deploy_project__templates_path: "{{ inventory_dir }}/group_templates/app_vms"
+
+deploy_project__nginx_config_files_path: ''
+# Example:
+# deploy_project__nginx_config_files_path: "{{ inventory_dir }}/group_files/app_vms/nginx"

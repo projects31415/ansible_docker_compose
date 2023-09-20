@@ -1,0 +1,9 @@
+---
+-
+  name: Restart nginx compose service
+  community.docker.docker_compose:
+    project_src: "{{ deploy_project__project_path }}"
+    restarted: true
+    services:
+      - web
+  listen: restart nginx

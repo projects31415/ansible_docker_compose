@@ -1,0 +1,10 @@
+Host app
+    HostName app.test
+    IdentityFile ~/.ssh/id_rsa
+    IdentitiesOnly yes
+    ServerAliveInterval 60
+    ServerAliveCountMax 2
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    Port 22
+    User ansible

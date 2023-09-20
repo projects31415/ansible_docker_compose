@@ -1,0 +1,49 @@
+---
+# Based on ansible-lint config
+extends: default
+
+rules:
+  braces:
+    max-spaces-inside: 1
+    level: error
+  brackets:
+    max-spaces-inside: 1
+    level: error
+  colons:
+    max-spaces-after: -1
+    level: error
+  commas:
+    max-spaces-after: -1
+    level: error
+  comments:
+    require-starting-space: true
+    ignore-shebangs: true
+    min-spaces-from-content: 1
+    level: warning
+  comments-indentation: disable
+  line-length: disable
+  document-start:
+    present: true
+  empty-lines:
+    max: 3
+    level: error
+  hyphens:
+    level: error
+  quoted-strings:
+    required: only-when-needed
+    quote-type: any
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: true
+    level: warning
+  octal-values:
+    forbid-implicit-octal: true # to prevent numbers starting with 0
+    forbid-explicit-octal: true # to prevent numbers starting with 0o
+  indentation:
+    level: error
+    indent-sequences: consistent
+  key-duplicates: enable
+  new-line-at-end-of-file: enable
+  new-lines:
+    type: unix
+  trailing-spaces: enable

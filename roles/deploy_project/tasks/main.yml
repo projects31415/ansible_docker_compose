@@ -1,0 +1,119 @@
+---
+- name: Install python pip for docker & docker-compose modules
+  ansible.builtin.package:
+    name:
+      - python3-pip
+    update_cache: true
+    state: present
+-
+  name: Install docker python package
+  ansible.builtin.pip:
+    name:
+      - docker
+      - docker-compose
+-
+  name: Ensure docker-compose {{ deploy_project__project_path }} dir exists
+  ansible.builtin.file:
+    path: "{{ deploy_project__item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  with_items:
+    - path: "{{ deploy_project__project_path }}"
+  loop_control:
+    loop_var: deploy_project__item
+-
+  name: End play
+  when: deploy_project__templates_path | length < 1
+  ansible.builtin.meta: end_play
+-
+  name: Copy docker-compose file
+  ansible.builtin.template:
+    src: "{{ deploy_project__item.src }}"
+    dest: "{{ deploy_project__item.dest }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    -
+      src: '{{ deploy_project__templates_path }}/docker-compose.yml.j2'
+      dest: '{{ deploy_project__project_path }}/docker-compose.yml'
+  loop_control:
+    loop_var: deploy_project__item
+-
+  name: Check local tempate .env file
+  ansible.builtin.stat:
+    path: "{{ deploy_project__templates_path }}/.env.j2"
+  delegate_to: localhost
+  register: _secrets_file
+-
+  name: Create .env file
+  when: _secrets_file.stat.exists
+  ansible.builtin.template:
+    src: "{{ deploy_project__item.src }}"
+    dest: "{{ deploy_project__item.dest }}"
+    owner: root
+    group: root
+    mode: "0600"
+  with_items:
+    -
+      src: '{{ deploy_project__templates_path }}/.env.j2'
+      dest: '{{ deploy_project__project_path }}/.env'
+  loop_control:
+    loop_var: deploy_project__item
+
+-
+  name: Ensure {{ deploy_project__project_path }}/configs/web/templates dir exists
+  ansible.builtin.file:
+    path: "{{ deploy_project__item.path }}/configs/web/templates"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  with_items:
+    - path: "{{ deploy_project__project_path }}"
+  loop_control:
+    loop_var: deploy_project__item
+
+-
+  name: Ensure {{ deploy_project__project_path }}/app/ dir exists
+  ansible.builtin.file:
+    path: "{{ deploy_project__item.path }}/app/"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  with_items:
+    - path: "{{ deploy_project__project_path }}"
+  loop_control:
+    loop_var: deploy_project__item
+-
+  name: Copy nginx conf files
+  when: deploy_project__nginx_config_files_path | length > 0
+  ansible.builtin.copy:
+    src: "{{ deploy_project__item.src }}"
+    dest: "{{ deploy_project__item.dest }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart nginx
+  with_items:
+    -
+      src: '{{ deploy_project__nginx_config_files_path }}/nginx.conf'
+      dest: "{{ deploy_project__project_path }}/configs/web/"
+    -
+      src: '{{ deploy_project__nginx_config_files_path }}/website.conf.template'
+      dest: "{{ deploy_project__project_path }}/configs/web/templates/"
+
+  loop_control:
+    loop_var: deploy_project__item
+-
+  name: Start docker-compose service
+  community.docker.docker_compose:
+    project_src: "{{ deploy_project__project_path }}"
+    pull: true
+    remove_orphans: true
+-
+  name: Force handlers execution
+  ansible.builtin.meta: flush_handlers

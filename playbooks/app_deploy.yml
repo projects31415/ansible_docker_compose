@@ -1,0 +1,9 @@
+---
+- name: Deploy compose
+  hosts: app_vms
+  gather_facts: false
+  strategy: free
+  become: true
+
+  roles:
+    - deploy_project

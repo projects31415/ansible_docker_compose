@@ -1,0 +1,80 @@
+---
+# https://github.com/ansible/ansible-lint/blob/main/.ansible-lint
+# https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible-lint-config.json
+# https://github.com/ansible/ansible-lint/blob/main/src/ansiblelint/schemas/ansible-lint-config.json
+# https://ansible-lint.readthedocs.io/configuring/
+
+# https://ansible-lint.readthedocs.io/usage/#muting-warnings-to-avoid-false-positives
+# https://yamllint.readthedocs.io/en/stable/disable_with_comments.html
+# Disable yamllint for specific line: add above or at the end of the line # yamllint disable-line rule:<rule-name>
+# Ex.: # yamllint disable-line rule:line-length
+
+# Disable rule for specific line/task: add at the end of line the line # noqa <rule-name>
+# Ex.: # noqa name[casing], # noqa yaml[line-length], # noqa command-instead-of-shell
+# or
+# noqa yaml[line-length] disabled due to …
+
+# If you add # noqa [rule_id] to the end of the line then the rule will be skipped
+# If the rule is task-based (most are), the # noqa [rule_id] can be at the end of any line in the task
+# If the rule is line-based, # noqa [rule_id] must be at the end of the particular line to be skipped
+# You can skip multiple rules via a space-separated list # noqa 201 402
+
+# Ansible-lint profiles allow content creators to progressively improve the quality of Ansible playbooks, roles, and collections.
+# During early development cycles, you need Ansible-lint rules to be less strict.
+# profile: null # min, basic, moderate,safety, shared, production
+
+# Allows dumping of results in SARIF format
+# sarif_file: result.sarif
+
+# exclude_paths included in this file are parsed relative to this file's location
+# and not relative to the CWD of execution. CLI arguments passed to the --exclude
+# option are parsed relative to the CWD of execution.
+exclude_paths:
+  - molecule/*/molecule.yml
+  - molecule/*/collections.yml
+  - molecule/*/requirements.yml
+  - molecule/*/_collections.yml
+  - molecule/*/_requirements.yml
+  - tests/*
+
+skip_list:
+  - name[template]
+  # - name[casing] # suppress: All names should start with an uppercase letter.
+  - template-instead-of-copy # suppress: Templated files should use template instead of copy
+  - no-handler # suppress: Tasks that run when changed should likely be handlers.
+  # - yaml[line-length]
+  - schema[meta] # suppress:  Additional properties are not allowed ('dependency' was unexpected) for meta/main.yml
+
+# offline: true # disable installation of requirements.yml
+var_naming_pattern: "^[a-z0-9_]*$" # Enforce variable names to follow pattern
+
+# Ansible-lint does not fail on warnings from the rules or tags listed below
+# warn_list:
+#   - skip_this_tag
+#   - experimental # experimental is included in the implicit list
+#   # - role-name
+#   # - yaml[document-start]  # you can also use sub-rule matches
+
+# Some rules can transform files to fix (or make it easier to fix) identified
+# errors. `ansible-lint --write` will reformat YAML files and run these transforms.
+# By default it will run all transforms (effectively `write_list: ["all"]`).
+# You can disable running transforms by setting `write_list: ["none"]`.
+# Or only enable a subset of rule transforms by listing rules/tags here.
+# write_list:
+#   - all
+
+# # Mock modules or roles in order to pass ansible-playbook --syntax-check
+# mock_modules:
+#   - zuul_return
+#   # note the foo.bar is invalid as being neither a module or a collection
+#   - fake_namespace.fake_collection.fake_module
+#   - fake_namespace.fake_collection.fake_module.fake_submodule
+# mock_roles:
+#   - mocked_role
+#   - author.role_name # old standalone galaxy role
+#   - fake_namespace.fake_collection.fake_role # role within a collection
+
+# Enable checking of loop variable prefixes in roles
+loop_var_prefix: "^(__|{role}_)"
+# Offline mode disables installation of requirements.yml and schema refreshing
+# offline: true
